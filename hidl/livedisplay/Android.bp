@@ -156,8 +156,6 @@ cc_binary {
     init_rc: ["vendor.lineage.livedisplay@2.1-service.oplus.rc"],
     relative_install_path: "hw",
     srcs: [
-        ":vendor.lineage.livedisplay@2.0-sdm-pa",
-        ":vendor.lineage.livedisplay@2.0-sdm-utils",
         ":vendor.lineage.livedisplay@2.1-oplus-ab",
         ":vendor.lineage.livedisplay@2.1-oplus-af",
         ":vendor.lineage.livedisplay@2.1-oplus-dm",
@@ -174,7 +172,6 @@ cc_binary {
     ],
     header_libs: [
         "kernel_headers.oplus",
-        "vendor.lineage.livedisplay@2.0-sdm-headers",
         "vendor.lineage.livedisplay@2.1-oplus-headers",
     ],
     proprietary: true,
