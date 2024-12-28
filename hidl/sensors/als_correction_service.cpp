@@ -98,9 +98,11 @@ class TakeScreenshotCommand : public FrameworkCommand {
 
         DisplayCaptureArgs captureArgs;
         captureArgs.displayToken = display;
-        captureArgs.pixelFormat = android::ui::PixelFormat::RGBA_8888;
-
-        captureArgs.sourceCrop = screenshot_rect;
+        captureArgs.captureArgs.pixelFormat = static_cast<int>(android::PIXEL_FORMAT_RGBA_8888);
+        
+        android::gui::ARect rect;
+        captureArgs.captureArgs.sourceCrop = rect;
+        
         captureArgs.width = screenshot_rect.getWidth();
         captureArgs.height = screenshot_rect.getHeight();
         status_t ret = ScreenshotClient::captureDisplay(captureArgs, captureListener);
