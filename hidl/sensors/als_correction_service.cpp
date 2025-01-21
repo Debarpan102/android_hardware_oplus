@@ -32,7 +32,7 @@ using android::base::SetProperty;
 using android::ui::Rotation;
 using android::ui::DisplayState;
 using android::GraphicBuffer;
-using android::toARect;
+using android::Rect;
 using android::ScreenshotClient;
 using android::sp;
 using android::SurfaceComposerClient;
@@ -96,15 +96,14 @@ class TakeScreenshotCommand : public FrameworkCommand {
         android::PIXEL_FORMAT_RGB_888,
         GraphicBuffer::USAGE_SW_READ_OFTEN | GraphicBuffer::USAGE_SW_WRITE_OFTEN);
 
-        DisplayCaptureArgs displayCaptureArgs;
-        displayCaptureArgs.displayToken = getInternalDisplayToken();
-        displayCaptureArgs.captureArgs.pixelFormat = ::android::PIXEL_FORMAT_RGBA_8888;
-        displayCaptureArgs.captureArgs.sourceCrop = toARect(m_screenshot_rect);
-        displayCaptureArgs.width = m_screenshot_rect.getWidth();
-        displayCaptureArgs.height = m_screenshot_rect.getHeight();
-        displayCaptureArgs.captureArgs.captureSecureLayers = true;
-        
-        status_t ret = ScreenshotClient::captureDisplay(displayCaptureArgs, captureListener);
+        DisplayCaptureArgs captureArgs;
+        captureArgs.displayToken = display;
+        captureArgs.pixelFormat = android::ui::PixelFormat::RGBA_8888;
+
+        captureArgs.sourceCrop = screenshot_rect;
+        captureArgs.width = screenshot_rect.getWidth();
+        captureArgs.height = screenshot_rect.getHeight();
+        status_t ret = ScreenshotClient::captureDisplay(captureArgs, captureListener);
 
         uint8_t *out;
         auto resultWidth = outBuffer->getWidth();
