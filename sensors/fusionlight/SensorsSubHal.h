@@ -1,11 +1,17 @@
 /*
- * SPDX-FileCopyrightText: 2025 The LineageOS Project
+ * SPDX-FileCopyrightText: The LineageOS Project
  * SPDX-License-Identifier: Apache-2.0
  */
 
 #pragma once
 
+#include <atomic>
+#include <deque>
+#include <mutex>
+
 #include <V2_1/SubHal.h>
+
+#include "FusionLightProcessor.h"
 
 namespace android {
 namespace hardware {
@@ -13,7 +19,7 @@ namespace sensors {
 namespace V2_1 {
 namespace subhal {
 namespace implementation {
-namespace wrapper {
+namespace fusionlight {
 
 using ::android::hardware::sensors::V1_0::OperationMode;
 using ::android::hardware::sensors::V1_0::RateLevel;
@@ -34,11 +40,11 @@ class SensorsSubHal : public ISensorsSubHal, public IHalProxyCallback {
                          int64_t max_report_latency_ns) override;
     Return<Result> flush(int32_t sensor_handle) override;
     Return<void> registerDirectChannel(const SharedMemInfo& mem,
-                                       ISensors::registerDirectChannel_cb _hidl_cb) override;
+                                       ISensors::registerDirectChannel_cb callback) override;
     Return<Result> unregisterDirectChannel(int32_t channel_handle) override;
     Return<void> configDirectReport(int32_t sensor_handle, int32_t channel_handle, RateLevel rate,
-                                    ISensors::configDirectReport_cb _hidl_cb) override;
-    Return<void> getSensorsList_2_1(ISensors::getSensorsList_2_1_cb _hidl_cb) override;
+                                    ISensors::configDirectReport_cb callback) override;
+    Return<void> getSensorsList_2_1(ISensors::getSensorsList_2_1_cb callback) override;
     Return<Result> injectSensorData_2_1(const Event& event) override;
 
     // ISensorsSubHal
@@ -57,14 +63,29 @@ class SensorsSubHal : public ISensorsSubHal, public IHalProxyCallback {
     ScopedWakelock createScopedWakelock(bool lock) override;
 
   private:
+    enum class FlushTarget {
+        kRaw,
+        kFusionLight,
+    };
+
+    void emitFusionEvent(Event event);
+
     std::unique_ptr<void, std::function<void(void*)>> lib_handle_;
     V2_1::implementation::ISensorsSubHal* impl_;
     sp<IHalProxyCallback> hal_proxy_callback_;
 
-    std::unordered_map<int32_t, SensorType> handle_type_;
+    FusionLightProcessor fusion_light_;
+    std::mutex control_mutex_;
+    std::mutex flush_call_mutex_;
+    std::mutex flush_mutex_;
+    std::deque<FlushTarget> pending_flushes_;
+    int32_t high_pwm_handle_ = -1;
+    int32_t fusion_light_handle_ = -1;
+    bool raw_enabled_ = false;
+    std::atomic_bool fusion_light_enabled_ = false;
 };
 
-}  // namespace wrapper
+}  // namespace fusionlight
 }  // namespace implementation
 }  // namespace subhal
 }  // namespace V2_1
