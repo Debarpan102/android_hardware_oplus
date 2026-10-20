@@ -15,5 +15,7 @@ public class OplusUIFirstManager implements IOplusUIFirstManager {
         return sInstance;
     }
 
-    public void setUxThreadValue(int pid, int tid, String value) {}
+    @Override
+    public void setUxThreadValue(int pid, int flag, String tag) {
+    }
 }
